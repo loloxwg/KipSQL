@@ -1,5 +1,6 @@
 use crate::catalog::*;
 use crate::parser::{Ident, ObjectName, Statement};
+mod expression;
 mod statement;
 
 pub use self::statement::*;
@@ -50,7 +51,7 @@ impl Binder {
             Statement::CreateTable { .. } => {
                 Ok(BoundStatement::CreateTable(self.bind_create_table(stmt)?))
             }
-            //Statement::Query(query) => Ok(BoundStatement::Select(self.bind_select(query)?)),
+            Statement::Query(query) => Ok(BoundStatement::Select(self.bind_select(query)?)),
             _ => todo!("bind statement: {:#?}", stmt),
         }
     }
