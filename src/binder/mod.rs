@@ -1,7 +1,9 @@
 use crate::catalog::*;
 use crate::parser::{Ident, ObjectName, Statement};
+use std::collections::HashMap;
 mod expression;
 mod statement;
+mod table_ref;
 
 pub use self::statement::*;
 
@@ -25,24 +27,41 @@ pub enum BindError {
     SchemaNotFound(String),
     #[error("table not found: {0}")]
     TableNotFound(String),
+    #[error("column not found: {0}")]
+    ColumnNotFound(String),
     #[error("duplicated table: {0}")]
     DuplicatedTable(String),
     #[error("duplicated column: {0}")]
     DuplicatedColumn(String),
     #[error("invalid table name: {0:?}")]
     InvalidTableName(Vec<Ident>),
+    #[error("duplicated alias: {0}")]
+    DuplicatedAlias(String),
+    #[error("ambiguous column name: {0}")]
+    AmbiguousColumnName(String),
+    #[error("not nullable column: {0}")]
+    NotNullableColumn(String),
+    #[error("tuple length mismatch: expected {expected} but got {actual}")]
+    TupleLengthMismatch { expected: usize, actual: usize },
+    #[error("value should not be null in column: {0}")]
+    NullValueInColumn(String),
 }
 
+type TableName = String;
 /// The binder resolves all expressions referring to schema objects such as
 /// tables or views with their column names and types.
 pub struct Binder {
     catalog: CatalogRef,
+    tables: HashMap<TableName, TableRefId>,
 }
 
 impl Binder {
     /// Create a new [Binder].
     pub(crate) fn new(catalog: CatalogRef) -> Self {
-        Binder { catalog }
+        Binder {
+            catalog,
+            tables: HashMap::default(),
+        }
     }
 
     /// Bind a statement.

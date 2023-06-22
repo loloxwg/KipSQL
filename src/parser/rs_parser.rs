@@ -36,7 +36,7 @@ impl<'a> RSParser<'a> {
         let tokens = tokenizer.tokenize()?;
 
         Ok(RSParser {
-            parser: Parser::new(dialect).with_tokens(tokens),
+            parser: Parser::new(tokens, dialect),
         })
     }
 }
@@ -75,10 +75,10 @@ mod tests {
 
     #[test]
     fn test_create_ok() -> Result<(), ParserError> {
-        let sql = "CREATE DATABASE db";
+        let sql = "create database a;";
 
         let expected = Statement::CreateDatabase {
-            db_name: ObjectName(vec![Ident::new("db")]),
+            db_name: ObjectName(vec![Ident::new("a")]),
             if_not_exists: false,
             location: None,
             managed_location: None,
@@ -105,18 +105,6 @@ mod tests {
             Err(ParserError::ParserError(
                 "Expected [NOT] NULL or TRUE|FALSE or [NOT] DISTINCT FROM after IS, found: a"
                     .to_string()
-            ))
-        );
-    }
-
-    #[test]
-    fn test_nested_explain_error() {
-        let sql = "EXPLAIN EXPLAIN SELECT 1";
-        let ast = RSParser::parse_sql(sql);
-        assert_eq!(
-            ast,
-            Err(ParserError::ParserError(
-                "Explain must be root of the plan".to_string()
             ))
         );
     }

@@ -87,6 +87,7 @@ clippy::verbose_file_reads,
 clippy::panic, // allow debug_assert, panic in production code
 clippy::multiple_crate_versions, // caused by the dependency, can't be fixed
 )]
+#![deny(unused_must_use)]
 
 mod binder;
 mod catalog;

@@ -1,13 +1,12 @@
 use crate::binder::{split_name, BindError, Binder};
 use crate::catalog::ColumnDesc;
 use crate::parser::{ColumnDef, ColumnOption, Statement};
-use crate::types::{DataType, DatabaseIdT, SchemaIdT};
+use crate::types::{DataType, SchemaIdT};
 use std::collections::HashSet;
 
 /// A bound `CREATE TABLE` statement.
 #[derive(Debug, PartialEq, Clone)]
 pub struct BoundCreateTable {
-    pub database_id: DatabaseIdT,
     pub schema_id: SchemaIdT,
     pub table_name: String,
     pub columns: Vec<(String, ColumnDesc)>,
@@ -17,14 +16,14 @@ impl Binder {
     pub fn bind_create_table(&mut self, stmt: &Statement) -> Result<BoundCreateTable, BindError> {
         match stmt {
             Statement::CreateTable { name, columns, .. } => {
-                let (database_name, schema_name, table_name) = split_name(name)?;
+                if columns.is_empty() {
+                    return Err(BindError::EmptyColumns);
+                }
 
-                let db = self
+                let (_, schema_name, table_name) = split_name(name)?;
+
+                let schema = self
                     .catalog
-                    .get_database_by_name(database_name)
-                    .ok_or_else(|| BindError::InvalidDatabase(database_name.into()))?;
-
-                let schema = db
                     .get_schema_by_name(schema_name)
                     .ok_or_else(|| BindError::SchemaNotFound(schema_name.into()))?;
                 if schema.get_table_by_name(table_name).is_some() {
@@ -43,7 +42,6 @@ impl Binder {
                     .map(|col| (col.name.value.clone(), ColumnDesc::from(col)))
                     .collect();
                 Ok(BoundCreateTable {
-                    database_id: db.id(),
                     schema_id: schema.id(),
                     table_name: table_name.into(),
                     columns,
@@ -76,7 +74,7 @@ impl From<&ColumnDef> for ColumnDesc {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::catalog::RootCatalog;
+    use crate::catalog::DatabaseCatalog;
     use crate::parser;
     use crate::parser::SQLParser;
     use crate::types::{DataTypeExt, DataTypeKind};
@@ -84,7 +82,7 @@ mod tests {
 
     #[test]
     fn bind_create_table() {
-        let catalog = Arc::new(RootCatalog::new());
+        let catalog = Arc::new(DatabaseCatalog::new());
         let mut binder = Binder::new(catalog.clone());
         let sql = "
             create table t1 (v1 int not null, v2 int);
@@ -95,7 +93,6 @@ mod tests {
         assert_eq!(
             binder.bind_create_table(&stmts[0]),
             Ok(BoundCreateTable {
-                database_id: 0,
                 schema_id: 0,
                 table_name: "t1".into(),
                 columns: vec![
@@ -110,9 +107,8 @@ mod tests {
             Err(BindError::DuplicatedColumn("a".into()))
         );
 
-        let database = catalog.get_database_by_id(0).unwrap();
-        let schema = database.get_schema_by_id(0).unwrap();
-        schema.add_table("t3".into(), vec![], false).unwrap();
+        let schema = catalog.get_schema(0).unwrap();
+        schema.add_table("t3".into()).unwrap();
         assert_eq!(
             binder.bind_create_table(&stmts[2]),
             Err(BindError::DuplicatedTable("t3".into()))
