@@ -126,42 +126,43 @@ pub enum DatabaseError {
 
 #[cfg(test)]
 mod test {
-    use std::sync::Arc;
+    use crate::catalog::{ColumnCatalog, ColumnDesc};
+    use crate::db::Database;
+    use crate::execution_v1::ExecutorError;
+    use crate::storage::memory::InMemoryStorage;
+    use crate::storage::{Storage, StorageError};
+    use crate::types::{IdGenerator, LogicalType, TableId};
     use arrow::array::Int32Array;
     use arrow::datatypes::Schema;
     use arrow::record_batch::RecordBatch;
     use itertools::Itertools;
-    use crate::catalog::{ColumnCatalog, ColumnDesc};
-    use crate::db::Database;
-    use crate::execution_v1::ExecutorError;
-    use crate::storage::{Storage, StorageError};
-    use crate::storage::memory::InMemoryStorage;
-    use crate::types::{IdGenerator, LogicalType, TableId};
+    use std::sync::Arc;
 
     fn build_table(storage: &impl Storage) -> Result<TableId, StorageError> {
-        let fields = vec![
-            ColumnCatalog::new(
-                "c1".to_string(),
-                false,
-                ColumnDesc::new(LogicalType::Integer, true)
-            ).to_field(),
-        ];
+        let fields = vec![ColumnCatalog::new(
+            "c1".to_string(),
+            false,
+            ColumnDesc::new(LogicalType::Integer, true),
+        )
+        .to_field()];
         let batch = RecordBatch::try_new(
             Arc::new(Schema::new(fields)),
-            vec![Arc::new(Int32Array::from(vec![1, 2, 3, 4, 5]))]
-        ).unwrap();
+            vec![Arc::new(Int32Array::from(vec![1, 2, 3, 4, 5]))],
+        )
+        .unwrap();
 
         Ok(storage.create_table("t1", vec![batch])?)
     }
 
     #[test]
     fn test_run_sql() -> anyhow::Result<()> {
-        let mut database = Database::new_on_mem();
+        let database = Database::new_on_mem();
 
-        let i = build_table(&database.storage)?;
+        //let i = build_table(&database.storage)?;
 
         tokio_test::block_on(async move {
-            let batch = database.run("select * from t1").await?;
+            let _batch = database.run("create table t1 (a int)").await?;
+            let batch = database.run("select a from t1").await?;
             println!("{:#?}", batch);
 
             Ok(())

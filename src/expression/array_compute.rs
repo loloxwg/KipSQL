@@ -1,11 +1,11 @@
-use std::sync::Arc;
-use arrow::array::ArrayRef;
-use arrow::compute::{eq_dyn, gt_dyn, gt_eq_dyn, lt_dyn, lt_eq_dyn, neq_dyn};
-use arrow::datatypes::DataType;
-use arrow::array::*;
-use arrow::compute::*;
 use crate::execution_v1::ExecutorError;
 use crate::expression::BinaryOperator;
+use arrow::array::ArrayRef;
+use arrow::array::*;
+use arrow::compute::*;
+use arrow::compute::{eq_dyn, gt_dyn, gt_eq_dyn, lt_dyn, lt_eq_dyn, neq_dyn};
+use arrow::datatypes::DataType;
+use std::sync::Arc;
 /// Copied from datafusion binary.rs
 macro_rules! compute_op {
     // invoke binary operator

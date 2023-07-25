@@ -8,8 +8,8 @@ use crate::types::value::DataValue;
 use crate::types::LogicalType;
 
 pub mod agg;
-mod evaluator;
 mod array_compute;
+mod evaluator;
 
 /// ScalarExpression represnet all scalar expression in SQL.
 /// SELECT a+1, b FROM t1.
@@ -63,9 +63,12 @@ impl ScalarExpression {
             ScalarExpression::TypeCast { expr, .. } => expr.nullable(),
             ScalarExpression::IsNull { expr } => expr.nullable(),
             ScalarExpression::Unary { expr, .. } => expr.nullable(),
-            ScalarExpression::Binary { left_expr, right_expr, .. } =>
-                left_expr.nullable() && right_expr.nullable(),
-            ScalarExpression::AggCall { args, .. } => args[0].nullable()
+            ScalarExpression::Binary {
+                left_expr,
+                right_expr,
+                ..
+            } => left_expr.nullable() && right_expr.nullable(),
+            ScalarExpression::AggCall { args, .. } => args[0].nullable(),
         }
     }
 

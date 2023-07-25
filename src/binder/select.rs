@@ -319,7 +319,7 @@ mod tests {
     use sqlparser::ast::CharacterLength;
 
     use super::*;
-    use crate::binder::{BinderContext, BindError};
+    use crate::binder::{BindError, BinderContext};
     use crate::catalog::{ColumnCatalog, ColumnDesc, RootCatalog};
     use crate::planner::LogicalPlan;
     use crate::types::LogicalType;

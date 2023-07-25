@@ -1,11 +1,11 @@
-use arrow::datatypes::{Schema, SchemaRef};
-use arrow::record_batch::RecordBatch;
-use futures_async_stream::try_stream;
 use crate::execution_v1::volcano_executor::BoxedExecutor;
 use crate::execution_v1::ExecutorError;
 use crate::expression::ScalarExpression;
+use arrow::datatypes::{Schema, SchemaRef};
+use arrow::record_batch::RecordBatch;
+use futures_async_stream::try_stream;
 
-pub struct Projection { }
+pub struct Projection {}
 
 impl Projection {
     #[try_stream(boxed, ok = RecordBatch, error = ExecutorError)]
@@ -13,10 +13,7 @@ impl Projection {
         #[for_await]
         for batch in input {
             let batch = batch?;
-            let columns = exprs
-                .iter()
-                .map(|e| e.eval_column(&batch))
-                .try_collect();
+            let columns = exprs.iter().map(|e| e.eval_column(&batch)).try_collect();
             let fields = exprs.iter().map(|e| e.eval_field(&batch)).collect();
             let schema = SchemaRef::new(Schema::new_with_metadata(
                 fields,

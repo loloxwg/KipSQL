@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use anyhow::Result;
 use sqlparser::ast::{Ident, ObjectName, Statement};
 
-use crate::catalog::{RootCatalog, DEFAULT_SCHEMA_NAME, CatalogError};
+use crate::catalog::{CatalogError, RootCatalog, DEFAULT_SCHEMA_NAME};
 use crate::expression::ScalarExpression;
 use crate::planner::LogicalPlan;
 use crate::types::TableId;

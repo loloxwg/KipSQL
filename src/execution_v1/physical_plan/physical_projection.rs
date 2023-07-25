@@ -4,5 +4,5 @@ use crate::expression::ScalarExpression;
 pub struct PhysicalProjection {
     pub(crate) plan_id: u32,
     pub(crate) exprs: Vec<ScalarExpression>,
-    pub(crate) input: Box<PhysicalOperator>
+    pub(crate) input: Box<PhysicalOperator>,
 }

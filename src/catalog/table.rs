@@ -22,6 +22,11 @@ impl TableCatalog {
         self.column_idxs.get(name).cloned()
     }
 
+    pub(crate) fn get_column_by_name(&self, name: &str) -> Option<&ColumnCatalog> {
+        let id = self.column_idxs.get(name)?;
+        self.columns.get(id)
+    }
+
     pub(crate) fn contains_column(&self, name: &str) -> bool {
         self.column_idxs.contains_key(name)
     }
@@ -81,8 +86,16 @@ mod tests {
     // | 1         | true     |
     // | 2         | false    |
     fn test_table_catalog() {
-        let col0 = ColumnCatalog::new("a".into(), false, ColumnDesc::new(LogicalType::Integer, false));
-        let col1 = ColumnCatalog::new("b".into(), false, ColumnDesc::new(LogicalType::Boolean, false));
+        let col0 = ColumnCatalog::new(
+            "a".into(),
+            false,
+            ColumnDesc::new(LogicalType::Integer, false),
+        );
+        let col1 = ColumnCatalog::new(
+            "b".into(),
+            false,
+            ColumnDesc::new(LogicalType::Boolean, false),
+        );
         let col_catalogs = vec![col0, col1];
         let table_catalog = TableCatalog::new("test".to_string(), col_catalogs).unwrap();
 

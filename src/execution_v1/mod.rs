@@ -1,10 +1,10 @@
-pub(crate) mod volcano_executor;
 pub(crate) mod physical_plan;
+pub(crate) mod volcano_executor;
 
-use arrow::error::ArrowError;
 use crate::catalog::CatalogError;
 use crate::storage::StorageError;
 use crate::types::errors::TypeError;
+use arrow::error::ArrowError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum ExecutorError {
@@ -30,7 +30,7 @@ pub enum ExecutorError {
     StorageError(
         #[source]
         #[from]
-        StorageError
+        StorageError,
     ),
     #[error("Internal error: {0}")]
     InternalError(String),

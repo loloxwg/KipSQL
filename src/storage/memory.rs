@@ -28,12 +28,10 @@ impl Default for InMemoryStorage {
 impl InMemoryStorage {
     pub fn new() -> Self {
         InMemoryStorage {
-            inner: Arc::new(Mutex::new(
-                Inner {
-                    catalog: RootCatalog::default(),
-                    tables: HashMap::new(),
-                })
-            )
+            inner: Arc::new(Mutex::new(Inner {
+                catalog: RootCatalog::default(),
+                tables: HashMap::new(),
+            })),
         }
     }
 }
@@ -57,10 +55,9 @@ impl Storage for InMemoryStorage {
         let mut table = InMemoryTable::new(table_name, data)?;
         let mut inner = self.inner.lock();
 
-        let table_id = inner.catalog.add_table(
-            table_name.to_string(),
-            table.columns_vec.clone()
-        )?;
+        let table_id = inner
+            .catalog
+            .add_table(table_name.to_string(), table.columns_vec.clone())?;
 
         table.table_id = table_id;
         inner.tables.insert(table_id, table);
@@ -69,7 +66,8 @@ impl Storage for InMemoryStorage {
     }
 
     fn get_table(&self, id: TableId) -> Result<Self::TableType, StorageError> {
-        self.inner.lock()
+        self.inner
+            .lock()
             .tables
             .get(&id)
             .cloned()
@@ -77,8 +75,7 @@ impl Storage for InMemoryStorage {
     }
 
     fn get_catalog(&self) -> RootCatalog {
-        self.inner.lock()
-            .catalog.clone()
+        self.inner.lock().catalog.clone()
     }
 
     fn show_tables(&self) -> Result<RecordBatch, StorageError> {
@@ -112,11 +109,7 @@ impl InMemoryTable {
                 let field_name = f.name().to_string();
                 let column_desc =
                     ColumnDesc::new(LogicalType::try_from(f.data_type()).unwrap(), false);
-                let column_catalog = ColumnCatalog::new(
-                    field_name,
-                    f.is_nullable(),
-                    column_desc
-                );
+                let column_catalog = ColumnCatalog::new(field_name, f.is_nullable(), column_desc);
                 columns.push(column_catalog)
             }
         }

@@ -12,7 +12,11 @@ pub struct ColumnCatalog {
 }
 
 impl ColumnCatalog {
-    pub(crate) fn new(column_name: String, nullable: bool, column_desc: ColumnDesc) -> ColumnCatalog {
+    pub(crate) fn new(
+        column_name: String,
+        nullable: bool,
+        column_desc: ColumnDesc,
+    ) -> ColumnCatalog {
         ColumnCatalog {
             id: IdGenerator::build(),
             name: column_name,
@@ -45,10 +49,8 @@ impl ColumnCatalog {
 impl From<ColumnDef> for ColumnCatalog {
     fn from(column_def: ColumnDef) -> Self {
         let column_name = column_def.name.to_string();
-        let column_desc = ColumnDesc::new(
-            LogicalType::try_from(column_def.data_type).unwrap(),
-            false
-        );
+        let column_desc =
+            ColumnDesc::new(LogicalType::try_from(column_def.data_type).unwrap(), false);
         let mut nullable = false;
 
         // TODO: 这里可以对更多字段可设置内容进行补充
@@ -56,7 +58,7 @@ impl From<ColumnDef> for ColumnCatalog {
             match option_def.option {
                 ColumnOption::Null => nullable = true,
                 ColumnOption::NotNull => (),
-                _ => todo!()
+                _ => todo!(),
             }
         }
 
