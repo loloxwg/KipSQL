@@ -114,7 +114,7 @@ impl CopyFromFile {
 }
 
 fn return_result(size: usize, tx: Sender<Tuple>) -> Result<(), DatabaseError> {
-    let tuple = TupleBuilder::build_result(format!("import {} rows", size));
+    let tuple = TupleBuilder::build_result(size.to_string());
 
     tx.send(tuple).map_err(|_| DatabaseError::ChannelClose)?;
     Ok(())
