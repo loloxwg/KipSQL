@@ -229,10 +229,7 @@ mod tests {
             CoroutineState::Complete(()) => unreachable!(),
         }
         .unwrap();
-        assert_eq!(
-            tuple,
-            TupleBuilder::build_result(format!("import {} rows", 2))
-        );
+        assert_eq!(tuple, TupleBuilder::build_result(2.to_string()));
 
         Ok(())
     }
